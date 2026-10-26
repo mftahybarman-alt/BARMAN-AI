@@ -1457,14 +1457,29 @@ body.light-mode .bot-avatar img { filter: invert(1); }
 .auth-error { font-size: 14px; color: var(--danger); margin: 12px 0 0; text-align: center; }
 #verify-form { width: 100%; }
 .auth-hint { font-size: 13.5px; color: var(--text-muted); text-align: center; line-height: 1.9; margin: 0 0 12px; }
-.otp { position: relative; display: flex; gap: 6px; justify-content: center; direction: ltr; width: 100%; margin: 2px 0 14px; }
-.otp-box { flex: 1; max-width: 38px; height: 48px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-input); display: flex; align-items: center; justify-content: center; font-size: 21px; font-weight: 700; color: var(--text-color); transition: border-color 0.15s ease, box-shadow 0.15s ease; }
-.otp-box.filled { border-color: var(--accent); }
-.otp-box.active { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.verify-title { font-size: 19px; font-weight: 800; margin: 4px 0 12px; text-align: center; }
+.verify-email { display: flex; align-items: center; justify-content: center; gap: 8px; max-width: 100%; width: fit-content; margin: 0 auto 20px; padding: 7px 14px; border-radius: 999px; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-muted); font-size: 13px; }
+.verify-email svg { flex: none; color: var(--accent); }
+.verify-email span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: ltr; }
+#verify-form:not(.hidden) { animation: otpIn 0.3s ease both; }
+.otp { position: relative; display: flex; gap: 6px; justify-content: center; direction: ltr; width: 100%; margin: 2px 0 16px; }
+.otp-box { position: relative; flex: 1; max-width: 38px; height: 54px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--bg-input); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: var(--text-color); transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease; }
+.otp-box.filled { background: var(--accent-soft); border-color: var(--accent); animation: otpPop 0.2s ease; }
+.otp-box.active { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.otp-box.active:not(.filled)::after { content: ""; width: 2px; height: 24px; border-radius: 2px; background: var(--accent); animation: otpBlink 1s steps(1) infinite; }
+.otp.error .otp-box { border-color: var(--danger); box-shadow: none; }
+.otp.shake { animation: otpShake 0.45s ease; }
 .otp input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; background: transparent; font-size: 16px; caret-color: transparent; z-index: 1; }
-.auth-links { display: flex; justify-content: space-between; width: 100%; margin-top: 4px; }
+.auth-links { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; margin-top: 10px; }
 .auth-link { background: none; border: none; color: var(--accent); font-size: 13.5px; cursor: pointer; padding: 10px 4px; font-family: inherit; }
+.auth-links .auth-link { border: 1px solid var(--border); border-radius: 999px; padding: 8px 16px; background: transparent; }
 .auth-link:disabled { color: var(--text-muted); cursor: default; }
+#verify-submit:disabled { opacity: 0.45; }
+@keyframes otpIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes otpPop { 0% { transform: scale(0.86); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes otpBlink { 50% { opacity: 0; } }
+@keyframes otpShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+@media (prefers-reduced-motion: reduce) { .otp-box, #verify-form, .otp { animation: none !important; transition: none !important; } .otp-box::after { animation: none !important; } }
 #forgot-link { display: block; margin: 8px auto 0; }
 
 /* =====================================================================
@@ -1930,7 +1945,8 @@ img.ios-emoji {
         <button type="button" id="forgot-link" class="auth-link">رمزت را فراموش کردی؟ ورود با کد ایمیل</button>
       </form>
       <form id="verify-form" class="hidden" autocomplete="off">
-        <p class="auth-hint" id="verify-hint"></p>
+        <h2 class="verify-title">کد را وارد کن</h2>
+        <div class="verify-email" id="verify-hint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 8l9 6 9-6"></path></svg><span id="verify-email-text"></span></div>
         <div class="otp" id="otp-boxes">
           <div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div>
           <input type="text" id="code" inputmode="numeric" autocomplete="one-time-code" aria-label="کد تأیید" dir="ltr">
@@ -2710,6 +2726,8 @@ img.ios-emoji {
     const vHint = document.getElementById("verify-hint");
     const vCode = document.getElementById("code");
     const OTP_LEN = 8;
+    let verifying = false;
+    const otpWrap = document.getElementById("otp-boxes");
     const otpBoxes = Array.from(document.querySelectorAll("#otp-boxes .otp-box"));
     function renderOtp() {
       const v = vCode.value;
@@ -2719,9 +2737,17 @@ img.ios-emoji {
         b.classList.toggle("filled", !!v[i]);
         b.classList.toggle("active", focused && i === Math.min(v.length, OTP_LEN - 1));
       });
+      vSubmit.disabled = verifying || v.length < 6;
+    }
+    function flashError() {
+      otpWrap.classList.remove("shake");
+      void otpWrap.offsetWidth;
+      otpWrap.classList.add("error", "shake");
+      setTimeout(() => otpWrap.classList.remove("error", "shake"), 700);
     }
     vCode.addEventListener("input", () => {
       vCode.value = cleanCode(vCode.value).slice(0, OTP_LEN);
+      otpWrap.classList.remove("error");
       renderOtp();
       if (vCode.value.length === OTP_LEN && !vSubmit.disabled) vSubmit.click();
     });
@@ -2775,7 +2801,7 @@ img.ios-emoji {
       if (googleArea) googleArea.classList.add("hidden");
       vForm.classList.remove("hidden");
       if (subtitle) subtitle.classList.add("hidden");
-      vHint.textContent = "کد ارسال‌شده به ایمیلت را وارد کن";
+      document.getElementById("verify-email-text").textContent = email;
       vCode.value = "";
       renderOtp();
       hideMsg();
@@ -2850,6 +2876,7 @@ img.ios-emoji {
       e.preventDefault();
       const code = vCode.value;
       if (!code) return;
+      verifying = true;
       vSubmit.disabled = true;
       vSubmit.textContent = "لطفاً صبر کن...";
       hideMsg();
@@ -2865,8 +2892,9 @@ img.ios-emoji {
       } catch (err) {
         showMsg("خطایی رخ داد");
       }
-      vSubmit.disabled = false;
+      verifying = false;
       vSubmit.textContent = "تأیید و ورود";
+      flashError();
       vCode.value = "";
       renderOtp();
       try { vCode.focus(); } catch (e) {}
