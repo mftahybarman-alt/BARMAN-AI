@@ -1465,6 +1465,7 @@ body.light-mode .bot-avatar img { filter: invert(1); }
 .auth-links { display: flex; justify-content: space-between; width: 100%; margin-top: 4px; }
 .auth-link { background: none; border: none; color: var(--accent); font-size: 13.5px; cursor: pointer; padding: 10px 4px; font-family: inherit; }
 .auth-link:disabled { color: var(--text-muted); cursor: default; }
+#forgot-link { display: block; margin: 8px auto 0; }
 
 /* =====================================================================
    موبایل و تبلت کوچک
@@ -1926,6 +1927,7 @@ img.ios-emoji {
         <input type="email" id="email" class="settings-input auth-input" placeholder="ایمیل" required autocomplete="email">
         <input type="password" id="password" class="settings-input auth-input" placeholder="رمز عبور (حداقل ۶ کاراکتر)" required minlength="6" autocomplete="current-password">
         <button type="submit" id="auth-submit" class="auth-submit">ورود</button>
+        <button type="button" id="forgot-link" class="auth-link">رمزت را فراموش کردی؟ ورود با کد ایمیل</button>
       </form>
       <form id="verify-form" class="hidden" autocomplete="off">
         <p class="auth-hint" id="verify-hint"></p>
@@ -2162,7 +2164,17 @@ img.ios-emoji {
     const token = cleanCode(body.code);
     if (!EMAIL_RE.test(email)) return jsonRes({ error: "ایمیل معتبر نیست" }, 400);
     if (token.length < 6) return jsonRes({ error: "کد را کامل وارد کن" }, 400);
-    const r = await sbAuth("/verify", { type: "signup", email, token });
+    let r;
+    if (body.kind === "login") {
+      // ورود با کد برای حساب موجود؛ اگر حساب هنوز تأیید نشده بود، نوع دیگر را هم امتحان می‌کنیم
+      r = await sbAuth("/verify", { type: "email", email, token });
+      if (!r.ok && !r.net) {
+        const r2 = await sbAuth("/verify", { type: "signup", email, token });
+        if (r2.ok) r = r2;
+      }
+    } else {
+      r = await sbAuth("/verify", { type: "signup", email, token });
+    }
     if (r.ok && r.data && r.data.access_token) {
       startSession(String((r.data.user && r.data.user.email) || email).toLowerCase());
       return jsonRes({ ok: true });
@@ -2173,9 +2185,23 @@ img.ios-emoji {
   async function authResend(body) {
     const email = String(body.email || "").trim().toLowerCase();
     if (!EMAIL_RE.test(email)) return jsonRes({ error: "ایمیل معتبر نیست" }, 400);
-    const r = await sbAuth("/resend", { type: "signup", email });
+    const r = body.kind === "login"
+      ? await sbAuth("/otp", { email, create_user: false })
+      : await sbAuth("/resend", { type: "signup", email });
     if (r.ok) return jsonRes({ ok: true });
     return jsonRes({ error: authErrMsg(r, "resend") }, r.net ? 503 : 400);
+  }
+
+  // ورود با کد ایمیل (برای کسی که رمزش را فراموش کرده)
+  async function authCodeLogin(body) {
+    const email = String(body.email || "").trim().toLowerCase();
+    if (!EMAIL_RE.test(email)) return jsonRes({ error: "اول ایمیلت را درست بنویس" }, 400);
+    const r = await sbAuth("/otp", { email, create_user: false });
+    if (r.ok) return jsonRes({ need_code: true, email, kind: "login" });
+    const d = r.data || {};
+    if (!r.net && (d.error_code === "otp_disabled" || d.error_code === "user_not_found" || /signups not allowed/i.test(String(d.msg || ""))))
+      return jsonRes({ error: "حسابی با این ایمیل پیدا نشد؛ ثبت‌نام کن." }, 404);
+    return jsonRes({ error: authErrMsg(r, "login") }, r.net ? 503 : 400);
   }
 
   // ---------- داده‌های هر کاربر ----------
@@ -2627,6 +2653,7 @@ img.ios-emoji {
     if (path === "/api/auth/login" && method === "POST") return authLogin(parseJson());
     if (path === "/api/auth/verify" && method === "POST") return authVerify(parseJson());
     if (path === "/api/auth/resend" && method === "POST") return authResend(parseJson());
+    if (path === "/api/auth/code" && method === "POST") return authCodeLogin(parseJson());
     if (path === "/api/auth/logout" && method === "POST") { LS.set(SESSION_KEY, null); return jsonRes({ ok: true }); }
 
     const u = currentUser();
@@ -2704,8 +2731,10 @@ img.ios-emoji {
     const vResend = document.getElementById("verify-resend");
     const vBack = document.getElementById("verify-back");
     const googleArea = document.getElementById("google-auth-area");
+    const forgotBtn = document.getElementById("forgot-link");
     let mode = "login";
     let pendingEmail = "";
+    let pendingKind = "signup";
     let cdTimer = null;
 
     function showMsg(text, good) {
@@ -2720,6 +2749,7 @@ img.ios-emoji {
       tabLogin.classList.toggle("active", m === "login");
       tabSignup.classList.toggle("active", m === "signup");
       submitBtn.textContent = m === "login" ? "ورود" : "ساخت حساب";
+      forgotBtn.classList.toggle("hidden", m !== "login");
       hideMsg();
     }
     tabLogin.addEventListener("click", () => setMode("login"));
@@ -2737,13 +2767,14 @@ img.ios-emoji {
       cdTimer = setInterval(tick, 1000);
     }
 
-    function toCodeStep(email) {
+    function toCodeStep(email, kind) {
       pendingEmail = email;
+      pendingKind = kind === "login" ? "login" : "signup";
       form.classList.add("hidden");
       seg.classList.add("hidden");
       if (googleArea) googleArea.classList.add("hidden");
       vForm.classList.remove("hidden");
-      if (subtitle) subtitle.textContent = "تأیید ایمیل";
+      if (subtitle) subtitle.classList.add("hidden");
       vHint.textContent = "کد ارسال‌شده به ایمیلت را وارد کن";
       vCode.value = "";
       renderOtp();
@@ -2758,7 +2789,7 @@ img.ios-emoji {
       form.classList.remove("hidden");
       seg.classList.remove("hidden");
       if (googleArea && googleArea.querySelector("#google-btn") && googleArea.querySelector("#google-btn").children.length) googleArea.classList.remove("hidden");
-      if (subtitle) subtitle.textContent = subtitleOrig;
+      if (subtitle) { subtitle.textContent = subtitleOrig; subtitle.classList.remove("hidden"); }
       hideMsg();
     }
     vBack.addEventListener("click", backToForm);
@@ -2780,7 +2811,7 @@ img.ios-emoji {
         if (res.ok && data.need_code) {
           submitBtn.disabled = false;
           setMode(mode);
-          toCodeStep(data.email || email.toLowerCase());
+          toCodeStep(data.email || email.toLowerCase(), data.kind || "signup");
           return;
         }
         if (res.ok) {
@@ -2795,6 +2826,26 @@ img.ios-emoji {
       submitBtn.textContent = mode === "login" ? "ورود" : "ساخت حساب";
     });
 
+    forgotBtn.addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      if (!email) { showMsg("اول ایمیلت را در کادر بالا بنویس"); try { document.getElementById("email").focus(); } catch (e) {} return; }
+      forgotBtn.disabled = true;
+      hideMsg();
+      try {
+        const res = await fetch("/api/auth/code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.need_code) { toCodeStep(data.email || email.toLowerCase(), "login"); }
+        else showMsg(data.error || "خطایی رخ داد");
+      } catch (err) {
+        showMsg("خطایی رخ داد");
+      }
+      forgotBtn.disabled = false;
+    });
+
     vForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const code = vCode.value;
@@ -2806,7 +2857,7 @@ img.ios-emoji {
         const res = await fetch("/api/auth/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: pendingEmail, code }),
+          body: JSON.stringify({ email: pendingEmail, code, kind: pendingKind }),
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok) { location.reload(); return; }
@@ -2829,7 +2880,7 @@ img.ios-emoji {
         const res = await fetch("/api/auth/resend", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: pendingEmail }),
+          body: JSON.stringify({ email: pendingEmail, kind: pendingKind }),
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok) { showMsg("کد جدید فرستاده شد.", true); startCooldown(61); vCode.value = ""; renderOtp(); return; }
