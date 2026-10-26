@@ -1481,7 +1481,7 @@ body.light-mode .bot-avatar img { filter: invert(1); }
 @keyframes otpBlink { 50% { opacity: 0; } }
 @keyframes otpShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
 @media (prefers-reduced-motion: reduce) { .otp-box, #verify-form, .otp { animation: none !important; transition: none !important; } .otp-box::after { animation: none !important; } }
-#forgot-link { display: block; margin: 8px auto 0; }
+#forgot-link { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 8px auto 0; font-size: 14.5px; font-weight: 600; }
 
 /* =====================================================================
    موبایل و تبلت کوچک
@@ -1943,7 +1943,7 @@ img.ios-emoji {
         <input type="email" id="email" class="settings-input auth-input" placeholder="ایمیل" required autocomplete="email">
         <input type="password" id="password" class="settings-input auth-input" placeholder="رمز عبور (حداقل ۶ کاراکتر)" required minlength="6" autocomplete="current-password">
         <button type="submit" id="auth-submit" class="auth-submit">ورود</button>
-        <button type="button" id="forgot-link" class="auth-link">رمزت را فراموش کردی؟ ورود با کد ایمیل</button>
+        <button type="button" id="forgot-link" class="auth-link"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 8l9 6 9-6"></path></svg><span>ورود با ایمیل</span></button>
       </form>
       <form id="email-step" class="hidden" autocomplete="on">
         <h2 class="verify-title">ایمیلت را وارد کن</h2>
