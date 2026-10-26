@@ -1455,6 +1455,12 @@ body.light-mode .bot-avatar img { filter: invert(1); }
 .auth-submit:hover { background: var(--accent-hover); }
 .auth-submit:disabled { opacity: 0.55; cursor: default; }
 .auth-error { font-size: 14px; color: var(--danger); margin: 12px 0 0; text-align: center; }
+#verify-form { width: 100%; }
+.auth-hint { font-size: 13.5px; color: var(--text-muted); text-align: center; line-height: 1.9; margin: 0 0 12px; }
+.auth-code { text-align: center !important; letter-spacing: 6px; font-size: 20px; }
+.auth-links { display: flex; justify-content: space-between; width: 100%; margin-top: 4px; }
+.auth-link { background: none; border: none; color: var(--accent); font-size: 13.5px; cursor: pointer; padding: 10px 4px; font-family: inherit; }
+.auth-link:disabled { color: var(--text-muted); cursor: default; }
 
 /* =====================================================================
    موبایل و تبلت کوچک
@@ -1917,6 +1923,15 @@ img.ios-emoji {
         <input type="password" id="password" class="settings-input auth-input" placeholder="رمز عبور (حداقل ۶ کاراکتر)" required minlength="6" autocomplete="current-password">
         <button type="submit" id="auth-submit" class="auth-submit">ورود</button>
       </form>
+      <form id="verify-form" class="hidden" autocomplete="off">
+        <p class="auth-hint" id="verify-hint"></p>
+        <input type="text" id="code" class="settings-input auth-input auth-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="کد تأیید" required>
+        <button type="submit" id="verify-submit" class="auth-submit">تأیید و ورود</button>
+        <div class="auth-links">
+          <button type="button" id="verify-resend" class="auth-link" disabled>ارسال دوباره</button>
+          <button type="button" id="verify-back" class="auth-link">بازگشت</button>
+        </div>
+      </form>
       <p class="auth-error hidden" id="auth-error"></p>
 
       <div id="google-auth-area" class="hidden">
@@ -2043,18 +2058,74 @@ img.ios-emoji {
 
   function startSession(email) {
     LS.set(SESSION_KEY, { email, exp: Date.now() + 30 * 24 * 3600 * 1000 });
+    const users = LS.get(USERS_KEY, {});
+    if (!users[email]) { users[email] = { created_at: nowIso() }; LS.set(USERS_KEY, users); }
+  }
+
+  // ---------- ورود و ثبت‌نام واقعی با Supabase (کد تأیید ایمیل) ----------
+  // درخواست‌ها از مسیر /sb روی همین سایت می‌روند (vercel.json آن‌ها را به Supabase می‌رساند)
+  const SB_URL = location.origin + "/sb";
+  const SB_KEY = "sb_publishable_bLGwzviI_wW3EOriDYm5eQ_RAy0OmI1";
+  const NET_ERR = "ارتباط با سرور برقرار نشد؛ اینترنت را بررسی کن و دوباره تلاش کن.";
+
+  async function sbAuth(path, body) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 20000);
+    try {
+      const r = await realFetch(SB_URL + "/auth/v1" + path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: SB_KEY },
+        body: JSON.stringify(body || {}),
+        signal: ctrl.signal,
+      });
+      const data = await r.json().catch(() => ({}));
+      return { ok: r.ok, status: r.status, data };
+    } catch (e) {
+      return { ok: false, status: 0, data: {}, net: true };
+    } finally { clearTimeout(timer); }
+  }
+
+  // عددهای فارسی و عربی را به انگلیسی تبدیل می‌کند و بقیه را حذف می‌کند
+  function cleanCode(v) {
+    return String(v || "")
+      .replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+      .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
+      .replace(/\D/g, "");
+  }
+
+  function authErrMsg(r, ctx) {
+    if (r.net) return NET_ERR;
+    const d = r.data || {};
+    const code = String(d.error_code || "");
+    const msg = String(d.msg || d.message || d.error_description || "").toLowerCase();
+    if (r.status === 429 || /rate_limit/.test(code) || /rate limit|after \d+ seconds/.test(msg))
+      return "درخواست‌ها زیاد شد؛ یک دقیقه صبر کن و دوباره تلاش کن.";
+    if (code === "weak_password") return "رمز عبور ضعیف است؛ رمز قوی‌تری انتخاب کن.";
+    if (code === "user_already_exists" || code === "email_exists") return "این ایمیل قبلاً ثبت شده؛ وارد شو.";
+    if (code === "email_address_invalid") return "ایمیل معتبر نیست.";
+    if (code === "invalid_credentials" || /invalid login/.test(msg)) return "ایمیل یا رمز عبور اشتباه است";
+    if (ctx === "verify" && (code === "otp_expired" || r.status === 403 || r.status === 400 || r.status === 422))
+      return "کد اشتباه است یا منقضی شده؛ دوباره امتحان کن یا کد جدید بگیر.";
+    if (code === "email_provider_disabled" || code === "signup_disabled") return "ثبت‌نام با ایمیل فعلاً بسته است.";
+    if (r.status >= 500) return "مشکلی در سرور پیش آمد؛ کمی بعد دوباره تلاش کن.";
+    return "خطایی رخ داد؛ دوباره تلاش کن.";
   }
 
   async function authLogin(body) {
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "");
-    const users = LS.get(USERS_KEY, {});
-    const u = users[email];
-    if (!u || (await hashPw(password, u.salt)) !== u.hash) {
-      return jsonRes({ error: "ایمیل یا رمز عبور اشتباه است" }, 401);
+    if (!EMAIL_RE.test(email) || !password) return jsonRes({ error: "ایمیل یا رمز عبور اشتباه است" }, 401);
+    const r = await sbAuth("/token?grant_type=password", { email, password });
+    if (r.ok && r.data && r.data.access_token) {
+      startSession(String((r.data.user && r.data.user.email) || email).toLowerCase());
+      return jsonRes({ ok: true });
     }
-    startSession(email);
-    return jsonRes({ ok: true });
+    // حساب ساخته شده ولی هنوز تأیید نشده: کد جدید می‌فرستیم
+    if (!r.net && r.data && r.data.error_code === "email_not_confirmed") {
+      await sbAuth("/resend", { type: "signup", email });
+      return jsonRes({ need_code: true, email });
+    }
+    return jsonRes({ error: authErrMsg(r, "login") }, r.net ? 503 : 401);
   }
 
   async function authSignup(body) {
@@ -2062,12 +2133,36 @@ img.ios-emoji {
     const password = String(body.password || "");
     if (!EMAIL_RE.test(email)) return jsonRes({ error: "ایمیل معتبر نیست" }, 400);
     if (password.length < 6) return jsonRes({ error: "رمز عبور باید حداقل ۶ کاراکتر باشد" }, 400);
-    const users = LS.get(USERS_KEY, {});
-    if (users[email]) return jsonRes({ error: "این ایمیل قبلاً ثبت شده" }, 409);
-    const salt = Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b => b.toString(16).padStart(2, "0")).join("");
-    users[email] = { salt, hash: await hashPw(password, salt), created_at: nowIso() };
-    LS.set(USERS_KEY, users);
-    return authLogin(body);
+    const r = await sbAuth("/signup", { email, password });
+    if (!r.ok) return jsonRes({ error: authErrMsg(r, "signup") }, r.net ? 503 : 400);
+    const d = r.data || {};
+    // اگر «Confirm email» در Supabase خاموش باشد، همین‌جا وارد می‌شود
+    if (d.access_token) { startSession(email); return jsonRes({ ok: true }); }
+    const u = d.user || d;
+    if (Array.isArray(u.identities) && u.identities.length === 0)
+      return jsonRes({ error: "این ایمیل قبلاً ثبت شده؛ وارد شو." }, 409);
+    return jsonRes({ need_code: true, email });
+  }
+
+  async function authVerify(body) {
+    const email = String(body.email || "").trim().toLowerCase();
+    const token = cleanCode(body.code);
+    if (!EMAIL_RE.test(email)) return jsonRes({ error: "ایمیل معتبر نیست" }, 400);
+    if (token.length < 6) return jsonRes({ error: "کد را کامل وارد کن" }, 400);
+    const r = await sbAuth("/verify", { type: "signup", email, token });
+    if (r.ok && r.data && r.data.access_token) {
+      startSession(String((r.data.user && r.data.user.email) || email).toLowerCase());
+      return jsonRes({ ok: true });
+    }
+    return jsonRes({ error: authErrMsg(r, "verify") }, r.net ? 503 : 400);
+  }
+
+  async function authResend(body) {
+    const email = String(body.email || "").trim().toLowerCase();
+    if (!EMAIL_RE.test(email)) return jsonRes({ error: "ایمیل معتبر نیست" }, 400);
+    const r = await sbAuth("/resend", { type: "signup", email });
+    if (r.ok) return jsonRes({ ok: true });
+    return jsonRes({ error: authErrMsg(r, "resend") }, r.net ? 503 : 400);
   }
 
   // ---------- داده‌های هر کاربر ----------
@@ -2517,6 +2612,8 @@ img.ios-emoji {
 
     if (path === "/api/auth/signup" && method === "POST") return authSignup(parseJson());
     if (path === "/api/auth/login" && method === "POST") return authLogin(parseJson());
+    if (path === "/api/auth/verify" && method === "POST") return authVerify(parseJson());
+    if (path === "/api/auth/resend" && method === "POST") return authResend(parseJson());
     if (path === "/api/auth/logout" && method === "POST") { LS.set(SESSION_KEY, null); return jsonRes({ ok: true }); }
 
     const u = currentUser();
@@ -2559,24 +2656,80 @@ img.ios-emoji {
   };
   if (!currentUser()) window.showAuth();
 
-  // ---------- فرم ورود / ثبت‌نام (همان login.html) ----------
+  // ---------- فرم ورود / ثبت‌نام + مرحلهٔ کد تأیید ----------
   (() => {
     const tabLogin = document.getElementById("tab-login");
     const tabSignup = document.getElementById("tab-signup");
     const submitBtn = document.getElementById("auth-submit");
     const errorEl = document.getElementById("auth-error");
     const form = document.getElementById("auth-form");
+    const seg = document.querySelector(".auth-seg");
+    const subtitle = document.getElementById("auth-subtitle");
+    const subtitleOrig = subtitle ? subtitle.textContent : "";
+    const vForm = document.getElementById("verify-form");
+    const vHint = document.getElementById("verify-hint");
+    const vCode = document.getElementById("code");
+    const vSubmit = document.getElementById("verify-submit");
+    const vResend = document.getElementById("verify-resend");
+    const vBack = document.getElementById("verify-back");
+    const googleArea = document.getElementById("google-auth-area");
     let mode = "login";
+    let pendingEmail = "";
+    let cdTimer = null;
+
+    function showMsg(text, good) {
+      errorEl.textContent = text;
+      errorEl.style.color = good ? "var(--accent)" : "";
+      errorEl.classList.remove("hidden");
+    }
+    function hideMsg() { errorEl.classList.add("hidden"); errorEl.style.color = ""; }
 
     function setMode(m) {
       mode = m;
       tabLogin.classList.toggle("active", m === "login");
       tabSignup.classList.toggle("active", m === "signup");
       submitBtn.textContent = m === "login" ? "ورود" : "ساخت حساب";
-      errorEl.classList.add("hidden");
+      hideMsg();
     }
     tabLogin.addEventListener("click", () => setMode("login"));
     tabSignup.addEventListener("click", () => setMode("signup"));
+
+    function startCooldown(n) {
+      clearInterval(cdTimer);
+      vResend.disabled = true;
+      const tick = () => {
+        if (n <= 0) { clearInterval(cdTimer); vResend.disabled = false; vResend.textContent = "ارسال دوباره"; return; }
+        vResend.textContent = "ارسال دوباره (" + n + ")";
+        n--;
+      };
+      tick();
+      cdTimer = setInterval(tick, 1000);
+    }
+
+    function toCodeStep(email) {
+      pendingEmail = email;
+      form.classList.add("hidden");
+      seg.classList.add("hidden");
+      if (googleArea) googleArea.classList.add("hidden");
+      vForm.classList.remove("hidden");
+      if (subtitle) subtitle.textContent = "تأیید ایمیل";
+      vHint.textContent = "یک کد تأیید به \u2066" + email + "\u2069 فرستادیم. کد را همین‌جا وارد کن. اگر در صندوق اصلی نبود، پوشهٔ اسپم را هم نگاه کن.";
+      vCode.value = "";
+      hideMsg();
+      startCooldown(61);
+      setTimeout(() => { try { vCode.focus(); } catch (e) {} }, 50);
+    }
+
+    function backToForm() {
+      clearInterval(cdTimer);
+      vForm.classList.add("hidden");
+      form.classList.remove("hidden");
+      seg.classList.remove("hidden");
+      if (googleArea && googleArea.querySelector("#google-btn") && googleArea.querySelector("#google-btn").children.length) googleArea.classList.remove("hidden");
+      if (subtitle) subtitle.textContent = subtitleOrig;
+      hideMsg();
+    }
+    vBack.addEventListener("click", backToForm);
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -2592,18 +2745,64 @@ img.ios-emoji {
           body: JSON.stringify({ email, password }),
         });
         const data = await res.json().catch(() => ({}));
+        if (res.ok && data.need_code) {
+          submitBtn.disabled = false;
+          setMode(mode);
+          toCodeStep(data.email || email.toLowerCase());
+          return;
+        }
         if (res.ok) {
           location.reload();
           return;
         }
-        errorEl.textContent = data.error || "خطایی رخ داد";
-        errorEl.classList.remove("hidden");
+        showMsg(data.error || "خطایی رخ داد");
       } catch (err) {
-        errorEl.textContent = "خطایی رخ داد";
-        errorEl.classList.remove("hidden");
+        showMsg("خطایی رخ داد");
       }
       submitBtn.disabled = false;
-      setMode(mode);
+      submitBtn.textContent = mode === "login" ? "ورود" : "ساخت حساب";
+    });
+
+    vForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const code = vCode.value;
+      if (!code) return;
+      vSubmit.disabled = true;
+      vSubmit.textContent = "لطفاً صبر کن...";
+      hideMsg();
+      try {
+        const res = await fetch("/api/auth/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: pendingEmail, code }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) { location.reload(); return; }
+        showMsg(data.error || "خطایی رخ داد");
+      } catch (err) {
+        showMsg("خطایی رخ داد");
+      }
+      vSubmit.disabled = false;
+      vSubmit.textContent = "تأیید و ورود";
+    });
+
+    vResend.addEventListener("click", async () => {
+      if (vResend.disabled) return;
+      vResend.disabled = true;
+      hideMsg();
+      try {
+        const res = await fetch("/api/auth/resend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: pendingEmail }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) { showMsg("کد جدید فرستاده شد.", true); startCooldown(61); return; }
+        showMsg(data.error || "خطایی رخ داد");
+      } catch (err) {
+        showMsg("خطایی رخ داد");
+      }
+      startCooldown(10);
     });
   })();
 
