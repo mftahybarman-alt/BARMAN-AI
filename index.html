@@ -1461,7 +1461,8 @@ body.light-mode .bot-avatar img { filter: invert(1); }
 .verify-email { display: flex; align-items: center; justify-content: center; gap: 8px; max-width: 100%; width: fit-content; margin: 0 auto 20px; padding: 7px 14px; border-radius: 999px; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-muted); font-size: 13px; }
 .verify-email svg { flex: none; color: var(--accent); }
 .verify-email span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: ltr; }
-#verify-form:not(.hidden) { animation: otpIn 0.3s ease both; }
+#verify-form:not(.hidden), #email-step:not(.hidden) { animation: otpIn 0.3s ease both; }
+#email-step { width: 100%; }
 .otp { position: relative; display: flex; gap: 6px; justify-content: center; direction: ltr; width: 100%; margin: 2px 0 16px; }
 .otp-box { position: relative; flex: 1; max-width: 38px; height: 54px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--bg-input); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: var(--text-color); transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease; }
 .otp-box.filled { background: var(--accent-soft); border-color: var(--accent); animation: otpPop 0.2s ease; }
@@ -1943,6 +1944,12 @@ img.ios-emoji {
         <input type="password" id="password" class="settings-input auth-input" placeholder="رمز عبور (حداقل ۶ کاراکتر)" required minlength="6" autocomplete="current-password">
         <button type="submit" id="auth-submit" class="auth-submit">ورود</button>
         <button type="button" id="forgot-link" class="auth-link">رمزت را فراموش کردی؟ ورود با کد ایمیل</button>
+      </form>
+      <form id="email-step" class="hidden" autocomplete="on">
+        <h2 class="verify-title">ایمیلت را وارد کن</h2>
+        <input type="email" id="step-email" class="settings-input auth-input" placeholder="ایمیل" required autocomplete="email">
+        <button type="submit" id="step-submit" class="auth-submit">ارسال کد</button>
+        <div class="auth-links" style="justify-content:center"><button type="button" id="step-back" class="auth-link">بازگشت</button></div>
       </form>
       <form id="verify-form" class="hidden" autocomplete="off">
         <h2 class="verify-title">کد را وارد کن</h2>
@@ -2758,6 +2765,10 @@ img.ios-emoji {
     const vBack = document.getElementById("verify-back");
     const googleArea = document.getElementById("google-auth-area");
     const forgotBtn = document.getElementById("forgot-link");
+    const emailStep = document.getElementById("email-step");
+    const stepEmail = document.getElementById("step-email");
+    const stepSubmit = document.getElementById("step-submit");
+    const stepBack = document.getElementById("step-back");
     let mode = "login";
     let pendingEmail = "";
     let pendingKind = "signup";
@@ -2798,6 +2809,7 @@ img.ios-emoji {
       pendingKind = kind === "login" ? "login" : "signup";
       form.classList.add("hidden");
       seg.classList.add("hidden");
+      emailStep.classList.add("hidden");
       if (googleArea) googleArea.classList.add("hidden");
       vForm.classList.remove("hidden");
       if (subtitle) subtitle.classList.add("hidden");
@@ -2812,6 +2824,7 @@ img.ios-emoji {
     function backToForm() {
       clearInterval(cdTimer);
       vForm.classList.add("hidden");
+      emailStep.classList.add("hidden");
       form.classList.remove("hidden");
       seg.classList.remove("hidden");
       if (googleArea && googleArea.querySelector("#google-btn") && googleArea.querySelector("#google-btn").children.length) googleArea.classList.remove("hidden");
@@ -2852,10 +2865,26 @@ img.ios-emoji {
       submitBtn.textContent = mode === "login" ? "ورود" : "ساخت حساب";
     });
 
-    forgotBtn.addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      if (!email) { showMsg("اول ایمیلت را در کادر بالا بنویس"); try { document.getElementById("email").focus(); } catch (e) {} return; }
-      forgotBtn.disabled = true;
+    // صفحهٔ «ایمیلت را وارد کن» (ورود با کد، بدون رمز)
+    function toEmailStep() {
+      form.classList.add("hidden");
+      seg.classList.add("hidden");
+      if (googleArea) googleArea.classList.add("hidden");
+      if (subtitle) subtitle.classList.add("hidden");
+      emailStep.classList.remove("hidden");
+      stepEmail.value = document.getElementById("email").value.trim();
+      hideMsg();
+      setTimeout(() => { try { stepEmail.focus(); } catch (e) {} }, 50);
+    }
+    forgotBtn.addEventListener("click", toEmailStep);
+    stepBack.addEventListener("click", backToForm);
+
+    emailStep.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = stepEmail.value.trim();
+      if (!email) return;
+      stepSubmit.disabled = true;
+      stepSubmit.textContent = "لطفاً صبر کن...";
       hideMsg();
       try {
         const res = await fetch("/api/auth/code", {
@@ -2864,12 +2893,18 @@ img.ios-emoji {
           body: JSON.stringify({ email }),
         });
         const data = await res.json().catch(() => ({}));
-        if (res.ok && data.need_code) { toCodeStep(data.email || email.toLowerCase(), "login"); }
-        else showMsg(data.error || "خطایی رخ داد");
+        if (res.ok && data.need_code) {
+          stepSubmit.disabled = false;
+          stepSubmit.textContent = "ارسال کد";
+          toCodeStep(data.email || email.toLowerCase(), "login");
+          return;
+        }
+        showMsg(data.error || "خطایی رخ داد");
       } catch (err) {
         showMsg("خطایی رخ داد");
       }
-      forgotBtn.disabled = false;
+      stepSubmit.disabled = false;
+      stepSubmit.textContent = "ارسال کد";
     });
 
     vForm.addEventListener("submit", async (e) => {
