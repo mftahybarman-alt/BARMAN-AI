@@ -14,8 +14,8 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet"></noscript>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Orbitron:wght@600;700;800&family=Audiowide&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Orbitron:wght@600;700;800&family=Audiowide&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" media="print" onload="this.media='all'">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" onload="window.__hljsReady && window.__hljsReady()"></script>
 <style>
@@ -27,20 +27,20 @@
 
 :root {
   /* رنگ‌ها: همان پالت قبلی */
-  --bg-main: #212121;
-  --bg-sidebar: #181818;
-  --bg-input: #2f2f2f;
+  --bg-main: #000000;
+  --bg-sidebar: #212121;
+  --bg-input: #212121;
   --bg-code: #1a1a1a;
-  --bg-header: rgba(33, 33, 33, 0.85);
+  --bg-header: transparent;
   --border: rgba(255, 255, 255, 0.09);
   --text-color: #ececec;
   --text-muted: #8e8ea0;
-  --bubble-user: #2f2f2f;
-  --accent: #4e8cff;
-  --accent-hover: #659dff;
+  --bubble-user: #2b2b2b;
+  --accent: #3B6EF5;
+  --accent-hover: #5b86f7;
   --accent-ink: #ffffff;      /* متن روی دکمه‌ی رنگی */
-  --accent-text: #4e8cff;     /* لینک و حالت فعال */
-  --accent-soft: rgba(78, 140, 255, 0.14);
+  --accent-text: #8fadfb;     /* لینک و حالت فعال */
+  --accent-soft: rgba(59, 110, 245, 0.18);
   --hover-bg: rgba(255, 255, 255, 0.06);
   --active-bg: rgba(255, 255, 255, 0.09);
   --danger: #ff7373;
@@ -51,9 +51,9 @@
   --font: 'Vazirmatn', 'Noto Sans Arabic', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Courier New', monospace;
 
-  --header-h: 52px;
+  --header-h: 68px;
   --column: 760px;            /* عرض ستون گفتگو روی صفحه‌ی بزرگ */
-  --tap: 44px;                /* حداقل اندازه‌ی ناحیه‌ی لمس */
+  --tap: 48px;                /* حداقل اندازه‌ی ناحیه‌ی لمس */
 }
 
 body.light-mode {
@@ -1664,6 +1664,315 @@ img.ios-emoji {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+
+/* =====================================================================
+   قالب جدید: کشوی کناری مینیمال + نوار بالای Chat | Work + کادر نوشتن گرد
+   ===================================================================== */
+.hidden-force { display: none !important; }
+
+/* دکمه‌ی گرد */
+.circle-btn, .main-header .icon-btn, .round-btn {
+  width: var(--tap); height: var(--tap); border-radius: 50%;
+  background: var(--active-bg); color: var(--text-color);
+}
+.circle-btn:hover, .main-header .icon-btn:hover { background: var(--hover-bg); }
+
+/* --- کشو --- */
+.sidebar { padding: calc(14px + env(safe-area-inset-top)) 10px 0; }
+.sidebar-top { height: 64px; margin-bottom: 4px; padding-inline: 12px 4px; gap: 8px; }
+.drawer-title {
+  flex: 1; min-width: 0;
+  font-family: 'Audiowide', 'Orbitron', var(--font); font-size: 25px; font-weight: 400;
+  letter-spacing: 2.5px; white-space: nowrap; direction: ltr; text-align: left;
+  background: linear-gradient(90deg, var(--text-color) 35%, var(--accent-text));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+.drawer-menu { display: flex; flex-direction: column; gap: 2px; padding-top: 8px; }
+.drawer-link {
+  width: 100%; height: 56px; display: flex; align-items: center; gap: 16px;
+  padding: 0 12px; border: 0; border-radius: 16px; background: transparent;
+  color: var(--text-color); font-size: 18px; font-weight: 600; text-align: start; cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.drawer-link:hover, .drawer-link:active { background: var(--hover-bg); }
+.drawer-divider { height: 1px; background: var(--border); margin: 12px 12px 8px; flex: none; }
+.sidebar-search { margin: 0 2px 8px; }
+.sidebar-search input { border-radius: 16px; }
+
+.chat-list { gap: 2px; padding-bottom: 112px; }
+.chat-item { min-height: 54px; border-radius: 16px; font-size: 16px; color: var(--text-color); }
+.chat-item:not(.active) { color: var(--text-color); }
+.chat-item-title { unicode-bidi: plaintext; text-align: start; font-weight: 500; letter-spacing: 0; }
+
+/* پایین کشو: دکمه‌ی آبی «چت جدید» + آواتار و تنظیمات */
+.sidebar-bottom {
+  position: absolute; inset-inline: 0; bottom: 0; margin: 0; border-top: 0;
+  padding: 40px 14px calc(16px + env(safe-area-inset-bottom));
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: linear-gradient(to top, var(--bg-sidebar) 58%, transparent);
+  pointer-events: none;
+}
+.sidebar-bottom > * { pointer-events: auto; }
+.new-chat-btn.fab {
+  flex: 0 0 auto; height: 56px; padding: 0 22px; gap: 10px; border: 0; border-radius: 28px;
+  background: var(--accent); color: #fff; font-size: 18px; font-weight: 600;
+  box-shadow: 0 6px 20px rgba(59, 110, 245, 0.35);
+}
+.new-chat-btn.fab:hover { background: var(--accent-hover); }
+.bottom-actions { display: flex; align-items: center; gap: 10px; }
+.bottom-actions .round-btn { width: 52px; height: 52px; flex: none; padding: 0; }
+.round-btn {
+  border: 0; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: transform .15s ease, background .15s ease;
+}
+.round-btn:active { transform: scale(.92); }
+.avatar-btn {
+  background: #e8821e; color: #fff;
+  font-size: 19px; font-weight: 600; font-family: inherit;
+}
+#avatar-initials { direction: ltr; }
+#avatar-initials:empty::before {
+  content: ""; width: 24px; height: 24px; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E") center / contain no-repeat;
+  display: block;
+}
+@media (min-width: 769px) { .sidebar { position: relative; } }
+
+/* --- نوار بالا --- */
+.main-header {
+  position: relative; border-bottom: 0; background: transparent;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 0;
+  min-height: calc(var(--header-h) + env(safe-area-inset-top));
+  align-items: flex-start;
+}
+.brand { display: none; }
+.chat-title {
+  display: block; flex: 1; align-self: center; text-align: center; min-width: 0;
+  margin: 0; padding: 0; border: 0; font-size: 15px; color: var(--text-muted);
+}
+[dir="rtl"] #sidebar-open-btn svg { transform: scaleX(-1); }
+.main-body:not(.empty) .input-row { border-top: 0; background: var(--bg-main); }
+
+/* --- کادر نوشتن --- */
+.input-capsule {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  border-radius: 32px; padding: 6px; border-color: transparent; align-items: center;
+}
+.attach-btn, .send-btn { width: 48px; height: 48px; }
+.attach-btn { color: var(--text-color); }
+#user-input { padding: 12px 8px; }
+
+/* --- موبایل --- */
+@media (max-width: 768px) {
+  .sidebar {
+    padding: calc(14px + env(safe-area-inset-top)) 10px 0;
+    border-start-end-radius: 28px; border-end-end-radius: 28px;
+    transition: transform .38s cubic-bezier(.32, .72, 0, 1), visibility 0s;
+  }
+  .sidebar.collapsed {
+    padding: calc(14px + env(safe-area-inset-top)) 10px 0;
+    transition: transform .38s cubic-bezier(.32, .72, 0, 1), visibility 0s linear .38s;
+  }
+  #sidebar-toggle { display: none; }
+  .chat-item { min-height: 54px; font-size: 16px; }
+  .main-header { padding: calc(10px + env(safe-area-inset-top)) 14px 0; min-height: calc(var(--header-h) + env(safe-area-inset-top)); }
+  .main-body.empty .input-row { padding: 8px 14px calc(14px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar, .sidebar.collapsed { transition-duration: .01ms !important; }
+}
+
+/* ===== صفحه‌ی ساخت تصویر ===== */
+.circle-btn { border: 0; cursor: pointer; display: grid; place-items: center; }
+.images-page {
+  position: fixed; inset: 0; z-index: 70; background: var(--bg-main);
+  display: flex; flex-direction: column;
+  animation: ipIn .32s cubic-bezier(.32, .72, 0, 1);
+}
+@keyframes ipIn { from { transform: translateY(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+.ip-head {
+  display: flex; align-items: center; justify-content: space-between; flex: none;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 8px;
+}
+.ip-head .circle-btn, .ip-spacer { width: var(--tap); height: var(--tap); }
+[dir="rtl"] #ip-back svg { transform: scaleX(-1); }
+.ip-title { font-size: 19px; font-weight: 700; }
+.ip-scroll { flex: 1; overflow-y: auto; padding: 8px 14px 18px; display: flex; flex-direction: column; -webkit-overflow-scrolling: touch; }
+.ip-empty {
+  margin: auto; text-align: center; color: var(--text-muted);
+  display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px;
+}
+.ip-empty svg { opacity: .55; margin-bottom: 6px; }
+.ip-empty p { font-size: 18px; font-weight: 600; color: var(--text-color); margin: 0; }
+.ip-empty span { font-size: 15px; }
+.ip-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; flex: none; }
+.ip-grid:empty { display: none; }
+@media (min-width: 600px) { .ip-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1000px) { .ip-grid { grid-template-columns: repeat(4, 1fr); } }
+.ip-scroll:has(.ip-grid:not(:empty)) .ip-empty { display: none; }
+
+.tile { position: relative; aspect-ratio: 1 / 1; border-radius: 18px; overflow: hidden; background: var(--bg-input); cursor: pointer; animation: tilePop .35s ease both; }
+@keyframes tilePop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+.tile img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transform: scale(1.04); transition: opacity .6s ease, transform .6s ease; }
+.tile img.loaded { opacity: 1; transform: none; }
+.tile.loading { cursor: default; }
+.tile.loading::before {
+  content: ""; position: absolute; inset: -30%;
+  background: radial-gradient(circle at 50% 50%, rgba(59, 110, 245, .38), transparent 55%);
+  animation: ipGlow 2.4s ease-in-out infinite;
+}
+.tile.loading .shimmer {
+  position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(140, 140, 160, .26) 50%, transparent 70%);
+  background-size: 220% 100%; animation: ipShimmer 1.5s linear infinite;
+}
+.tile.loading .orb { position: absolute; inset: 0; display: grid; place-items: center; }
+.tile.loading .orb svg { color: var(--accent); animation: ipOrb 1.6s ease-in-out infinite; }
+@keyframes ipShimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+@keyframes ipGlow { 0%, 100% { transform: scale(.85); opacity: .55; } 50% { transform: scale(1.1); opacity: 1; } }
+@keyframes ipOrb { 0%, 100% { transform: scale(.8) rotate(0); opacity: .7; } 50% { transform: scale(1.15) rotate(90deg); opacity: 1; } }
+.tile.failed {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 14px;
+  border: 1.5px dashed var(--border); color: var(--danger); text-align: center; font-size: 13px;
+}
+.tile.failed span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+.ip-composer { flex: none; padding: 8px 14px calc(14px + env(safe-area-inset-bottom)); }
+.ip-pill {
+  display: flex; align-items: center; gap: 8px; height: 64px; border-radius: 32px;
+  background: var(--bg-input); border: 1px solid transparent; padding-inline: 22px 7px;
+  transition: border-color .2s ease;
+}
+.ip-pill:focus-within { border-color: var(--accent); }
+.ip-pill input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: none; color: var(--text-color); font: inherit; font-size: 17px; }
+.ip-pill input::placeholder { color: var(--text-muted); }
+.ip-send {
+  flex: none; width: 50px; height: 50px; border: 0; border-radius: 50%; cursor: pointer;
+  background: var(--accent); color: #fff; display: grid; place-items: center;
+  transition: opacity .2s ease, transform .15s ease;
+}
+.ip-send:active { transform: scale(.92); }
+.ip-send:disabled { opacity: .35; cursor: default; }
+
+.ip-lightbox {
+  position: fixed; inset: 0; z-index: 80; background: rgba(0, 0, 0, .93);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  padding: calc(70px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+  animation: ipIn .25s ease;
+}
+.ip-lightbox img { max-width: 100%; max-height: 66dvh; border-radius: 16px; object-fit: contain; }
+.ip-lightbox p { max-width: 560px; margin: 0; color: #c8c8d0; font-size: 14px; text-align: center; line-height: 1.7; unicode-bidi: plaintext; }
+.ip-lb-close { position: absolute; top: calc(12px + env(safe-area-inset-top)); inset-inline-start: 14px; background: rgba(255,255,255,.12); color: #fff; }
+.ip-lb-actions { display: flex; gap: 14px; }
+.ip-lb-actions .circle-btn { background: rgba(255,255,255,.12); color: #fff; }
+@media (prefers-reduced-motion: reduce) { .images-page, .ip-lightbox, .tile, .tile.loading::before, .tile.loading .shimmer, .tile.loading .orb svg { animation-duration: .01ms !important; } }
+
+/* ===== دکمه‌ی پروفایل حلقه‌دار + صفحه‌ی حساب کاربری ===== */
+[dir="rtl"] .drawer-title { text-align: right; }
+.profile-ring {
+  flex: none; width: 62px; height: 62px; padding: 0; border-radius: 50%; cursor: pointer;
+  border: 1px solid var(--border); background: var(--active-bg);
+  display: grid; place-items: center; transition: transform .15s ease;
+}
+.profile-ring:active { transform: scale(.94); }
+.profile-ring #avatar-initials {
+  width: 46px; height: 46px; border-radius: 50%; background: #e8821e; color: #fff;
+  font-size: 18px; font-weight: 600; display: grid; place-items: center;
+}
+.profile-ring #avatar-initials:empty::before { width: 22px; height: 22px; }
+
+/* ===== صفحه‌ی حساب کاربری به سبک لیست گروه‌بندی‌شده ===== */
+.acct-page { --ap-row: #353535; --ap-row-hover: #3f3f3f; }
+body.light-mode .acct-page { --ap-row: #eeeef1; --ap-row-hover: #e4e4e9; }
+.acct-wrap { width: 100%; max-width: 640px; margin: 0 auto; flex: none; }
+.acct-page .ap-scroll { padding: calc(10px + env(safe-area-inset-top)) 14px calc(32px + env(safe-area-inset-bottom)); }
+.ap-back { position: absolute; z-index: 3; top: calc(10px + env(safe-area-inset-top)); inset-inline-start: 14px; background: var(--ap-row); }
+.ap-hero { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 4px 0 2px; }
+.ap-avatar {
+  width: 84px; height: 84px; border-radius: 50%; background: #e8821e; color: #fff;
+  display: grid; place-items: center; font-size: 30px; font-weight: 600; direction: ltr;
+}
+.ap-name { margin: 0; font-size: 18px; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: ltr; }
+.ap-section-title { margin: 22px 8px 8px; font-size: 14px; color: var(--text-muted); }
+.ap-section-title:empty { margin: 18px 0 0; }
+.ap-group { display: flex; flex-direction: column; gap: 6px; }
+.ap-item { background: var(--ap-row); border-radius: 8px; overflow: hidden; }
+.ap-group > .ap-item:first-child { border-top-left-radius: 22px; border-top-right-radius: 22px; }
+.ap-group > .ap-item:last-child { border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; }
+.ap-group:empty { display: none; }
+.acct-page .ap-item > .ap-row, .acct-page .ap-item > .ap-row.static {
+  width: 100%; min-height: 54px; display: flex; align-items: center; justify-content: flex-start; gap: 14px;
+  padding: 8px 18px; margin: 0; border: 0; border-radius: 0; background: transparent; color: var(--text-color);
+  font: inherit; font-size: 16px; text-align: start; cursor: pointer; box-shadow: none; text-decoration: none;
+}
+.acct-page .ap-item > .ap-row.static { cursor: default; min-height: 62px; }
+.acct-page .ap-item > button.ap-row:active { background: var(--ap-row-hover); }
+.ap-ico { flex: none; }
+.ap-label { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ap-sub { font-size: 13px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: ltr; text-align: start; }
+[dir="rtl"] .ap-sub#profile-email { text-align: right; }
+.ap-chev { flex: none; transition: transform .25s ease; }
+.ap-item.open .ap-chev { transform: rotate(180deg); }
+.ap-panel { display: none; padding: 2px 16px 16px; }
+.ap-item.open .ap-panel { display: block; animation: apOpen .25s ease; }
+@keyframes apOpen { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.ap-panel .usage-table { width: 100%; background: var(--bg-input); border-radius: 16px; overflow: hidden; }
+.ap-panel .memory-add-row { margin-top: 10px; }
+.ap-panel .profile-note { margin: 0 0 4px; }
+.ap-panel .settings-select { width: 100%; }
+.ap-panel .settings-textarea { margin-top: 12px; }
+.acct-page .ap-item > button.ap-row.danger-row { color: var(--danger); font-size: 16px; }
+.acct-page .ap-item > button.ap-row.danger-row span { color: inherit; }
+.acct-page .ap-item > button.ap-row.danger-row svg { width: 22px; height: 22px; flex: none; }
+.ap-item[hidden], .ap-group[hidden], .ap-section-title[hidden] { display: none !important; }
+
+.ap-noresult { text-align: center; color: var(--text-muted); padding: 40px 0; }
+
+/* ===== پایین سایدبار: هم‌تراز، با فاصله‌ی بیشتر از گوشه‌ی گرد ===== */
+.sidebar-bottom { padding: 40px 22px calc(22px + env(safe-area-inset-bottom)); gap: 12px; align-items: center; }
+.new-chat-btn.fab { height: 56px; }
+.profile-ring { width: 56px; height: 56px; }
+.profile-ring #avatar-initials { width: 42px; height: 42px; font-size: 16px; }
+.profile-ring #avatar-initials:empty::before { width: 20px; height: 20px; }
+.chat-list { padding-bottom: 124px; }
+
+/* ===== صفحهٔ خالی: فقط لوگو با انیمیشن دوره‌ای ===== */
+.empty-state { gap: 0; }
+.empty-logo { position: relative; width: 76px; height: 76px; animation: logoIn .9s cubic-bezier(.2,.9,.3,1) both; }
+.empty-logo img { position: relative; z-index: 1; transform-origin: 50% 50%; animation: logoBurst 9s cubic-bezier(.45,.05,.2,1) 1.6s infinite; will-change: transform, filter; }
+.empty-logo::before {            /* هالهٔ نور پشت لوگو */
+  content: ""; position: absolute; inset: -34%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 62%);
+  opacity: 0; transform: scale(.5); animation: logoGlow 9s ease-out 1.6s infinite;
+}
+.empty-logo::after {             /* حلقهٔ موجی */
+  content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  border: 2px solid var(--accent); opacity: 0; transform: scale(.7); animation: logoRing 9s ease-out 1.6s infinite;
+}
+@keyframes logoIn { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+@keyframes logoBurst {
+  0%, 62% { transform: none; filter: none; }
+  67% { transform: scale(.78) rotate(-16deg); }
+  76% { transform: scale(1.28) rotate(360deg); filter: drop-shadow(0 0 14px var(--accent)); }
+  83% { transform: scale(.94) rotate(366deg); }
+  90%, 100% { transform: scale(1) rotate(360deg); filter: none; }
+}
+@keyframes logoGlow {
+  0%, 66% { opacity: 0; transform: scale(.5); }
+  76% { opacity: .55; transform: scale(1.1); }
+  92%, 100% { opacity: 0; transform: scale(1.5); }
+}
+@keyframes logoRing {
+  0%, 74% { opacity: 0; transform: scale(.7); }
+  77% { opacity: .75; }
+  94%, 100% { opacity: 0; transform: scale(2.3); }
+}
+@media (max-width: 768px) { .empty-logo { width: 68px; height: 68px; } }
+@media (prefers-reduced-motion: reduce) {
+  .empty-logo, .empty-logo img, .empty-logo::before, .empty-logo::after { animation: none !important; }
+}
 </style>
 </head>
 <body>
@@ -1672,37 +1981,40 @@ img.ios-emoji {
   <div id="app">
     <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
 
-    <!-- سایدبار -->
+    <!-- سایدبار (کشو) -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
-        <button id="new-chat-btn" class="new-chat-btn">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><g transform="matrix(-1 0 0 1 24 0)"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></g></svg>
-          <span data-i18n="newChat">چت جدید</span>
-        </button>
-        <button id="search-toggle" class="icon-btn" title="جستجو در چت‌ها">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span class="drawer-title">BARMAN AI</span>
+        <button id="search-toggle" class="icon-btn circle-btn" title="جستجو در چت‌ها">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="20.5" y1="20.5" x2="16.5" y2="16.5"></line></svg>
         </button>
         <button id="sidebar-toggle" class="icon-btn" title="بستن سایدبار">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
         </button>
       </div>
 
-        <div class="sidebar-search hidden" id="sidebar-search">
-          <input id="chat-search" type="text" data-i18n-placeholder="search" placeholder="جستجو در چت‌ها...">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </div>
+      <nav class="drawer-menu">
+        <button id="nav-images" class="drawer-link">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><rect x="7" y="3" width="14" height="14" rx="3"></rect><path d="M3.5 8v10a2.5 2.5 0 0 0 2.5 2.5h10"></path><circle cx="12" cy="8" r="1.4"></circle><path d="m8 15 4-3.5 5 4"></path></svg>
+          <span data-i18n="navImages">تصاویر</span>
+        </button>
+      </nav>
 
-        <div class="chat-list" id="chat-list"></div>
+      <div class="drawer-divider" role="separator"></div>
+
+      <div class="sidebar-search hidden" id="sidebar-search">
+        <input id="chat-search" type="text" data-i18n-placeholder="search" placeholder="جستجو در چت‌ها...">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+
+      <div class="chat-list" id="chat-list"></div>
 
       <div class="sidebar-bottom">
-        <button id="profile-btn" class="icon-btn theme-btn" title="پروفایل">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          <span data-i18n="profile">پروفایل</span>
-        </button>
-        <button id="settings-btn" class="icon-btn theme-btn" title="تنظیمات">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          <span data-i18n="settings">تنظیمات</span>
-        </button>
+        <div class="bottom-actions">
+          <button id="profile-btn" class="profile-ring" title="حساب کاربری">
+            <span id="avatar-initials"></span>
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -1710,14 +2022,13 @@ img.ios-emoji {
     <main class="main">
       <div class="main-header">
         <button id="sidebar-open-btn" class="icon-btn hidden" title="باز کردن سایدبار">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 8h16M4 16h9"></path></svg>
         </button>
-        <div class="brand">
-          <img class="brand-logo" data-logo alt="لوگو">
-          <span class="brand-name">BARMAN AI</span>
-        </div>
         <span class="chat-title" id="chat-title"></span>
         <div class="header-actions">
+          <button id="header-new-chat" class="icon-btn" title="چت جدید">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><g transform="matrix(-1 0 0 1 24 0)"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></g></svg>
+          </button>
         </div>
       </div>
 
@@ -1726,7 +2037,6 @@ img.ios-emoji {
           <div class="empty-logo">
             <img data-logo alt="BARMAN AI">
           </div>
-          <h2 class="empty-greeting" data-i18n="greeting">سلام 👋 چطور می‌تونم کمکت کنم؟</h2>
         </div>
 
         <div id="chat-box" class="chat-box"></div>
@@ -1877,8 +2187,8 @@ img.ios-emoji {
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           </div>
           <div class="profile-account-info">
-            <span class="profile-email" id="profile-email"></span>
-            <span class="profile-since" id="profile-since"></span>
+            <span class="profile-email"></span>
+            <span class="profile-since"></span>
           </div>
         </div>
 
@@ -2345,10 +2655,11 @@ img.ios-emoji {
     const en = isEn(lang);
     const t = withTimeout(signal, 300000);
     try {
+      const finalPrompt = await toEnglishPrompt(prompt, signal, uid);
       const resp = await realFetch(API_BASE + "/images/generations", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + getApiKey() },
-        body: JSON.stringify({ model: IMAGE_MODEL, prompt, n: 1, size: IMAGE_SIZE }),
+        body: JSON.stringify({ model: IMAGE_MODEL, prompt: finalPrompt, n: 1, size: IMAGE_SIZE }),
         signal: t.signal,
       });
       if (!resp.ok) throw new Error(await upstreamError(resp));
@@ -2460,6 +2771,95 @@ img.ios-emoji {
       },
     });
     return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" } });
+  }
+
+
+  // ---------- کمک‌ها: یک درخواست سریع و غیراستریم به مدل چت ----------
+  async function quickChat(messages, maxTokens, signal, uid, temperature) {
+    // همان روش استریمِ چت اصلی (که روی این API تست‌شده است) و جمع‌کردن متن
+    const t = withTimeout(signal, 30000);
+    const attempt = async () => {
+      const resp = await realFetch(API_BASE + "/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + getApiKey() },
+        body: JSON.stringify({
+          model: CHAT_MODEL, messages,
+          temperature: temperature == null ? 0.2 : temperature,
+          max_tokens: maxTokens, stream: true, stream_options: { include_usage: true },
+        }),
+        signal: t.signal,
+      });
+      if (!resp.ok) { console.warn("[quickChat] HTTP", resp.status, (await resp.text().catch(() => "")).slice(0, 200)); return null; }
+      const ct = resp.headers.get("Content-Type") || "";
+      let text = "", cost = 0;
+      if (ct.includes("application/json")) {          // اگر سرور استریم نکرد
+        const data = await resp.json();
+        const m = data && data.choices && data.choices[0] && data.choices[0].message;
+        text = m && typeof m.content === "string" ? m.content : "";
+        cost = data && data.usage && data.usage.cost;
+      } else {
+        const reader = resp.body.getReader(), dec = new TextDecoder();
+        let buf = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          const lines = buf.split("\n"); buf = lines.pop();
+          for (const line of lines) {
+            const s = line.trim();
+            if (!s.startsWith("data:")) continue;
+            const p = s.slice(5).trim();
+            if (!p || p === "[DONE]") continue;
+            let o; try { o = JSON.parse(p); } catch (e) { continue; }
+            if (o.usage && o.usage.cost != null) cost = o.usage.cost;
+            const d = o.choices && o.choices[0] && o.choices[0].delta;
+            if (d && typeof d.content === "string") text += d.content;
+          }
+        }
+      }
+      try { logUsage("chat", CHAT_MODEL, cost, uid); } catch (_) {}
+      text = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+      return text || null;
+    };
+    try {
+      for (let i = 0; i < 2; i++) {                    // یک بار تلاش مجدد
+        try {
+          const r = await attempt();
+          if (r) return r;
+        } catch (e) {
+          if (e && e.name === "AbortError" && signal && signal.aborted) throw e;
+          console.warn("[quickChat]", e && e.message || e);
+        }
+      }
+      return null;
+    } finally { t.done(); }
+  }
+
+  // اگر دستور ساخت عکس فارسی بود، یک‌بار به انگلیسی ترجمه می‌شود (در صورت خطا همان متن اصلی)
+  const HAS_PERSIAN = /[\u0600-\u06FF\u0750-\u077F]/;
+  async function toEnglishPrompt(prompt, signal, uid) {
+    if (!HAS_PERSIAN.test(prompt)) return prompt;
+    const out = await quickChat([
+      { role: "system", content: "You translate image-generation prompts from Persian to English. Translate faithfully and naturally; keep every detail, name, number and style word; do not add, remove, explain or embellish anything. Any part already in English stays as is. Output ONLY the English prompt text: no quotes, no notes, no prefix." },
+      { role: "user", content: prompt },
+    ], 600, signal, uid);
+    const clean = (out || "").replace(/^["'“”«»\s]+|["'“”«»\s]+$/g, "").trim();
+    return clean.length >= 2 ? clean.slice(0, 1500) : prompt;
+  }
+
+  // عنوان خودکار چت
+  async function handleTitle(body, signal, uid) {
+    if (!getApiKey()) return jsonRes({ error: "no key" }, 400);
+    const text = String(body.text || "").trim().slice(0, 500);
+    const reply = String(body.reply || "").trim().slice(0, 300);
+    if (!text && !reply) return jsonRes({ error: "empty" }, 400);
+    const out = await quickChat([
+      { role: "system", content: "You write very short chat titles. Write a title of 2 to 5 words that captures the topic of the conversation, in the same language as the user's message (Persian stays Persian, English stays English). Output ONLY the title: no quotes, no trailing punctuation, no emoji, no explanation." },
+      { role: "user", content: "User message:\n" + (text || "(image or file)") + (reply ? "\n\nAssistant reply (beginning):\n" + reply : "") },
+    ], 300, signal, uid);
+    const title = (out || "").split("\n")[0].replace(/^(title|عنوان)\s*[:：]\s*/i, "").replace(/^["'“”«»#*\s]+|["'“”«».!؟?،,:;*\s]+$/g, "").trim();
+    if (!title) return jsonRes({ error: "no title" }, 502);
+    return jsonRes({ title: title.slice(0, 40) });
   }
 
   async function handleChat(body, signal) {
@@ -2704,6 +3104,7 @@ img.ios-emoji {
       return jsonRes({ ok: true });
     }
 
+    if (path === "/api/title" && method === "POST") return handleTitle(parseJson(), init.signal, u);
     if (path === "/api/upload" && method === "POST") return handleUpload(init.body);
     if (path === "/api/chat" && method === "POST") return handleChat(parseJson(), init.signal);
 
@@ -3085,6 +3486,7 @@ const I18N = {
     menuImage: "تولید تصویر",
     menuThink: "فکر بیشتر",
     menuSearch: "جستجو در اینترنت",
+    navImages: "تصاویر",
     attach: "افزودن",
     closeSidebar: "بستن سایدبار",
     openSidebar: "باز کردن سایدبار",
@@ -3165,6 +3567,7 @@ const I18N = {
     menuImage: "Generate image",
     menuThink: "Think longer",
     menuSearch: "Search the web",
+    navImages: "Images",
     attach: "Add",
     closeSidebar: "Close sidebar",
     openSidebar: "Open sidebar",
@@ -3255,8 +3658,8 @@ function applyLanguage() {
   });
   document.getElementById("user-input").placeholder = t("placeholder");
   updatePlaceholder();
-  document.getElementById("settings-btn").title = t("settings");
-  document.getElementById("profile-btn").title = t("profile");
+  const _sb = document.getElementById("settings-btn"); if (_sb) _sb.title = t("settings");
+  document.getElementById("profile-btn").title = currentLang === "en" ? "Account" : "حساب کاربری";
   document.getElementById("attach-btn").title = t("attach");
   document.getElementById("send-btn").title = t("send");
   document.getElementById("search-toggle").title = t("search");
@@ -3298,7 +3701,7 @@ function openSettings() {
 }
 function closeSettings() { settingsBackdrop.classList.add("hidden"); }
 
-document.getElementById("settings-btn").addEventListener("click", openSettings);
+const _sb2 = document.getElementById("settings-btn"); if (_sb2) _sb2.addEventListener("click", openSettings);
 document.getElementById("settings-close").addEventListener("click", closeSettings);
 settingsBackdrop.addEventListener("click", (e) => {
   if (e.target === settingsBackdrop) closeSettings();
@@ -3577,7 +3980,7 @@ function startRenameChat(id) {
 
   const finish = (save) => {
     const newTitle = input.value.trim();
-    if (save && newTitle) chat.title = newTitle;
+    if (save && newTitle) { chat.title = newTitle; chat.titleAuto = false; }
     renderChatList();
     if (chat.id === activeChatId) {
       document.getElementById("chat-title").textContent = chat.messages.length ? chat.title : "";
@@ -4406,7 +4809,7 @@ async function requestAssistantReply(chat, mode = null) {
       if (data.error) {
         addMessageToDom(t("errorPrefix") + data.error, "assistant");
       } else if (data.image_url) {
-        msg.content = data.reply || "";
+        msg.content = ""; // متن «اینم تصویری که خواستی» حذف شد
         ensureBubble();
         finalizeBubble(data.image_url);
       }
@@ -4471,6 +4874,33 @@ async function requestAssistantReply(chat, mode = null) {
   }
 }
 
+// ---------- عنوان‌گذاری خودکار چت با هوش مصنوعی ----------
+async function autoTitleChat(chat) {
+  if (!chat || !chat.titleAuto) return;
+  const first = chat.messages.find(m => m.role === "user");
+  const last = [...chat.messages].reverse().find(m => m.role === "assistant");
+  if (!last) return;
+  const text = ((first && first.content) || "").trim();
+  const reply = last.image || !last.content ? "" : String(last.content);
+  if (!text && !reply) return;
+  try {
+    const res = await fetch("/api/title", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, reply: reply.slice(0, 300), lang: currentLang }),
+    });
+    if (!res.ok) { console.warn("[auto-title] failed", res.status); return; }
+    const d = await res.json();
+    const title = String((d && d.title) || "").trim();
+    if (!title || !chat.titleAuto) return;
+    chat.title = title;
+    chat.titleAuto = false;
+    saveChats();
+    renderChatList();
+    if (chat.id === activeChatId) document.getElementById("chat-title").textContent = chat.title;
+  } catch (_) { /* اگر نشد، همان عنوان موقت می‌ماند */ }
+}
+
 async function sendMessage() {
   if (isGenerating) return;
   const text = userInput.value.trim();
@@ -4481,6 +4911,7 @@ async function sendMessage() {
 
   if (chat.messages.length === 0) {
     chat.title = (text || "🖼️ عکس").length > 28 ? (text || "🖼️ عکس").slice(0, 28) + "…" : (text || "🖼️ عکس");
+    chat.titleAuto = true;  // بعد از اولین پاسخ، هوش مصنوعی عنوان بهتری می‌گذارد
   }
 
   const userMsg = { role: "user", content: text, time: Date.now() };
@@ -4511,6 +4942,7 @@ async function sendMessage() {
   updateSendBtnState();
 
   await requestAssistantReply(chat, mode);
+  if (chat.titleAuto) autoTitleChat(chat);
 }
 
 async function regenerateLastReply(chat) {
@@ -4548,7 +4980,17 @@ userInput.addEventListener("keydown", (e) => {
   }
 });
 
-document.getElementById("new-chat-btn").addEventListener("click", createChat);
+document.getElementById("header-new-chat").addEventListener("click", () => {
+  // اگر همین الان توی یک چت خالی هستیم، چت تازه‌ی دیگری نساز
+  const cur = getActiveChat();
+  if (cur && (!cur.messages || cur.messages.length === 0)) {
+    renderChatBox();
+    document.getElementById("user-input").focus();
+    if (isMobileViewport()) closeSidebar();
+    return;
+  }
+  createChat();
+});
 
 // ---------- دکمه‌ی برگشت به پایین چت ----------
 const chatBoxEl = document.getElementById("chat-box");
@@ -4580,7 +5022,7 @@ function openProfile() {
 }
 function closeProfile() { profileBackdrop.classList.add("hidden"); }
 
-document.getElementById("profile-btn").addEventListener("click", openProfile);
+// (دکمه‌ی پروفایل حالا صفحه‌ی حساب کاربری را باز می‌کند)
 document.getElementById("profile-close").addEventListener("click", closeProfile);
 profileBackdrop.addEventListener("click", (e) => {
   if (e.target === profileBackdrop) closeProfile();
@@ -4836,6 +5278,298 @@ syncPersonaChips();
   }).observe(document.body, { childList: true, subtree: true, characterData: true });
 
   processTree(document.body);
+})();
+</script>
+
+
+<!-- صفحه‌ی اختصاصی ساخت تصویر -->
+<div id="images-page" class="images-page hidden" role="dialog" aria-label="Images">
+  <div class="ip-head">
+    <button id="ip-back" class="circle-btn" aria-label="Back">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+    </button>
+    <h2 class="ip-title" id="ip-title">تصاویر</h2>
+    <span class="ip-spacer"></span>
+  </div>
+  <div class="ip-scroll" id="ip-scroll">
+    <div class="ip-empty" id="ip-empty">
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><rect x="7" y="3" width="14" height="14" rx="3"></rect><path d="M3.5 8v10a2.5 2.5 0 0 0 2.5 2.5h10"></path><circle cx="12" cy="8" r="1.4"></circle><path d="m8 15 4-3.5 5 4"></path></svg>
+      <p id="ip-empty-title">هنوز تصویری نساختی</p>
+      <span id="ip-empty-sub">پایین بنویس چه تصویری می‌خوای</span>
+    </div>
+    <div class="ip-grid" id="ip-grid"></div>
+  </div>
+  <div class="ip-composer">
+    <div class="ip-pill">
+      <input id="ip-input" type="text" enterkeyhint="send" autocomplete="off" placeholder="چه تصویری بسازم؟">
+      <button id="ip-send" class="ip-send" aria-label="Create" disabled>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
+      </button>
+    </div>
+  </div>
+</div>
+<div id="ip-lightbox" class="ip-lightbox hidden">
+  <button id="ip-lb-close" class="circle-btn ip-lb-close" aria-label="Close">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+  </button>
+  <img id="ip-lb-img" alt="">
+  <p id="ip-lb-prompt"></p>
+  <div class="ip-lb-actions">
+    <button id="ip-lb-download" class="circle-btn" aria-label="Download">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"></path></svg>
+    </button>
+    <button id="ip-lb-delete" class="circle-btn" aria-label="Delete">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>
+    </button>
+  </div>
+</div>
+
+<!-- صفحه‌ی حساب کاربری (پروفایل + تنظیمات) -->
+<div id="account-page" class="images-page acct-page hidden" role="dialog" aria-label="Account">
+  <button id="ap-back" class="circle-btn ap-back" aria-label="Back">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+  </button>
+  <div class="ip-scroll ap-scroll" id="ap-scroll">
+    <div class="acct-wrap" id="ap-body">
+      <div class="ap-hero">
+        <div class="ap-avatar" id="ap-avatar"></div>
+        <h2 class="ap-name" id="ap-name"></h2>
+        <span id="profile-since" hidden></span>
+      </div>
+
+      <div class="ap-group">
+      <div class="ap-item" data-kw="persona personalization شخصیت شخصی‌سازی ربات" id="item-persona">
+        <button class="ap-row ap-toggle" type="button" aria-expanded="false"><svg class="ap-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8.500 14.500s1.200 1.800 3.500 1.800 3.500-1.800 3.500-1.800"></path><path d="M9 9.500h.01M15 9.500h.01"></path></svg><span class="ap-label" id="lbl-persona">شخصی‌سازی</span><svg class="ap-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <div class="ap-panel" id="panel-persona"></div>
+      </div>
+      <div class="ap-item" data-kw="memory حافظه" id="item-memory">
+        <button class="ap-row ap-toggle" type="button" aria-expanded="false"><svg class="ap-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.500C4 4.700 4.700 4 5.500 4H11v16H5.500c-.8 0-1.500-.7-1.500-1.500z"></path><path d="M20 5.500c0-.8-.7-1.500-1.500-1.500H13v16h5.500c.8 0 1.500-.7 1.500-1.500z"></path></svg><span class="ap-label" id="lbl-memory">حافظه</span><svg class="ap-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <div class="ap-panel" id="panel-memory"></div>
+      </div>
+      </div>
+
+      <div class="ap-section-title" id="ap-sec-account">حساب</div>
+      <div class="ap-group">
+      <div class="ap-item" data-kw="email ایمیل">
+        <div class="ap-row static"><svg class="ap-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m4 8 8 6 8-6"></path></svg><span class="ap-label"><span id="lbl-email">ایمیل</span><span class="ap-sub" id="profile-email"></span></span></div>
+      </div>
+      <div class="ap-item" data-kw="usage limits مصرف هزینه" id="item-usage">
+        <button class="ap-row ap-toggle" type="button" aria-expanded="false"><svg class="ap-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V10M12 20V4M19 20v-7"></path></svg><span class="ap-label" id="lbl-usage">مصرف و محدودیت‌ها</span><svg class="ap-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <div class="ap-panel" id="panel-usage"></div>
+      </div>
+      </div>
+
+      <div class="ap-section-title" id="ap-sec-prefs"></div>
+      <div class="ap-group">
+      <div class="ap-item" data-kw="appearance theme dark light ظاهر تم تیره روشن" id="item-appearance">
+        <button class="ap-row ap-toggle" type="button" aria-expanded="false"><svg class="ap-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.900 4.900l1.400 1.400M17.700 17.700l1.400 1.400M2 12h2M20 12h2M4.900 19.100l1.400-1.400M17.700 6.300l1.400-1.400"></path></svg><span class="ap-label" id="lbl-appearance">ظاهر</span><svg class="ap-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <div class="ap-panel" id="panel-appearance"></div>
+      </div>
+      <div class="ap-item" data-kw="language زبان فارسی english" id="item-language">
+        <button class="ap-row ap-toggle" type="button" aria-expanded="false"><svg class="ap-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.500 2.700 3.700 5.700 3.700 9s-1.200 6.300-3.700 9c-2.500-2.700-3.700-5.700-3.700-9S9.500 5.700 12 3z"></path></svg><span class="ap-label" id="lbl-language">زبان</span><svg class="ap-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <div class="ap-panel" id="panel-language"></div>
+      </div>
+      </div>
+
+      <div class="ap-section-title" id="ap-sec-data"></div>
+      <div class="ap-group" id="ap-data"></div>
+    </div>
+  </div>
+</div>
+<script>
+// ---------- قالب جدید: دکمه‌ی چت جدید بالا، تصاویر، آواتار ----------
+(function () {
+  // ===== صفحه‌ی ساخت تصویر =====
+  const $ = id => document.getElementById(id);
+  const L = (fa, en) => (currentLang === "en" ? en : fa);
+  const page = $("images-page"), grid = $("ip-grid"), input = $("ip-input"), sendBtn = $("ip-send");
+  const lb = $("ip-lightbox"), lbImg = $("ip-lb-img");
+  let items = [], lbItem = null, pushed = false;
+  const storeKey = () => "barman-gallery:" + ((window.BarmanAuth && window.BarmanAuth.current && window.BarmanAuth.current()) || "guest");
+  function loadItems() {
+    try { items = JSON.parse(localStorage.getItem(storeKey()) || "[]"); } catch (_) { items = []; }
+  }
+  function saveItems() {
+    const keep = items.slice(0, 60);
+    try { localStorage.setItem(storeKey(), JSON.stringify(keep)); }
+    catch (_) {
+      try { localStorage.setItem(storeKey(), JSON.stringify(keep.filter(i => !String(i.url).startsWith("data:")))); } catch (__) {}
+    }
+  }
+  function applyTexts() {
+    $("ip-title").textContent = L("تصاویر", "Images");
+    $("ip-empty-title").textContent = L("هنوز تصویری نساختی", "No images yet");
+    $("ip-empty-sub").textContent = L("پایین بنویس چه تصویری می‌خوای", "Describe the image you want below");
+    input.placeholder = L("چه تصویری بسازم؟", "What image should I create?");
+  }
+  function imageTile(item) {
+    const el = document.createElement("div");
+    el.className = "tile done";
+    const img = document.createElement("img");
+    img.alt = item.prompt || "";
+    img.decoding = "async";
+    img.onload = () => img.classList.add("loaded");
+    img.onerror = () => { el.className = "tile failed"; el.innerHTML = "<span></span>"; el.firstChild.textContent = L("تصویر بارگذاری نشد", "Image failed to load"); };
+    img.src = item.url;
+    el.appendChild(img);
+    el.addEventListener("click", () => openLightbox(item));
+    return el;
+  }
+  function loadingTile() {
+    const el = document.createElement("div");
+    el.className = "tile loading";
+    el.innerHTML = '<div class="shimmer"></div><div class="orb"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.6 4.7 2.3 8.4 4.8 9.4.3.1.3.5 0 .6C14.3 13 12.6 16.4 12 22c-.6-5.6-2.3-9-4.8-10-.3-.1-.3-.5 0-.6C9.7 10.400 11.400 6.700 12 2z"></path></svg></div>';
+    return el;
+  }
+  function failTile(el, msg) {
+    el.className = "tile failed";
+    el.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6M12 16.500v.01"></path></svg><span></span>';
+    el.querySelector("span").textContent = msg;
+    el.title = L("برای حذف لمس کن", "Tap to dismiss");
+    el.onclick = () => el.remove();
+  }
+  function renderItems() {
+    grid.querySelectorAll(".tile.done, .tile.failed:not(.fresh)").forEach(n => n.remove());
+    items.forEach(it => grid.appendChild(imageTile(it)));
+  }
+  function updateSend() { sendBtn.disabled = !input.value.trim(); }
+
+  async function generate(prompt) {
+    const tile = loadingTile();
+    tile.classList.add("fresh");
+    grid.prepend(tile);
+    $("ip-scroll").scrollTo({ top: 0, behavior: "smooth" });
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], lang: currentLang, stream: true, mode: "image" })
+      });
+      if (res.status === 401) { tile.remove(); showAuth(); return; }
+      if (!(res.headers.get("Content-Type") || "").includes("application/json")) throw new Error(L("پاسخ نامعتبر از سرور", "Invalid server response"));
+      const data = await res.json();
+      if (data.error || !data.image_url) throw new Error(data.error || L("تصویری ساخته نشد", "No image was returned"));
+      const item = { id: Date.now() + Math.random(), url: data.image_url, prompt, t: Date.now() };
+      items.unshift(item);
+      saveItems();
+      const real = imageTile(item);
+      tile.replaceWith(real);
+    } catch (e) {
+      failTile(tile, String(e && e.message || e));
+    }
+  }
+  function submit() {
+    const p = input.value.trim();
+    if (!p) return;
+    input.value = "";
+    updateSend();
+    generate(p);
+    input.focus();
+  }
+  input.addEventListener("input", updateSend);
+  input.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); submit(); } });
+  sendBtn.addEventListener("click", submit);
+
+  // لایت‌باکس
+  function openLightbox(item) {
+    lbItem = item;
+    lbImg.src = item.url;
+    $("ip-lb-prompt").textContent = item.prompt || "";
+    lb.classList.remove("hidden");
+  }
+  function closeLightbox() { lb.classList.add("hidden"); lbItem = null; lbImg.removeAttribute("src"); }
+  $("ip-lb-close").addEventListener("click", closeLightbox);
+  lb.addEventListener("click", e => { if (e.target === lb) closeLightbox(); });
+  $("ip-lb-download").addEventListener("click", () => {
+    if (!lbItem) return;
+    const a = document.createElement("a");
+    a.href = lbItem.url; a.download = "barman-image.png"; a.target = "_blank"; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  $("ip-lb-delete").addEventListener("click", () => {
+    if (!lbItem) return;
+    items = items.filter(i => i.id !== lbItem.id);
+    saveItems();
+    closeLightbox();
+    renderItems();
+  });
+
+  // باز و بسته کردن صفحه (دکمه‌ی برگشت گوشی هم کار می‌کند)
+  function openPage() {
+    loadItems(); applyTexts(); renderItems(); updateSend();
+    page.classList.remove("hidden");
+    if (!pushed) { history.pushState({ barmanImages: 1 }, ""); pushed = true; }
+    if (isMobileViewport()) closeSidebar();
+  }
+  function hidePage() { closeLightbox(); page.classList.add("hidden"); }
+  function closePage() {
+    if (pushed) { pushed = false; history.back(); } else hidePage();
+  }
+  window.addEventListener("popstate", () => { pushed = false; hidePage(); });
+  $("ip-back").addEventListener("click", closePage);
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Escape" || page.classList.contains("hidden")) return;
+    if (!lb.classList.contains("hidden")) closeLightbox(); else closePage();
+  });
+  document.getElementById("nav-images").addEventListener("click", openPage);
+
+  // ===== صفحه‌ی حساب کاربری: لیست گروه‌بندی‌شده با ردیف‌های بازشونده =====
+  const ap = $("account-page");
+  const mv = (sel, panelId) => { const n = document.querySelector(sel); if (n) $(panelId).appendChild(n); };
+  mv("#persona-chips", "panel-persona"); mv("#persona-input", "panel-persona");
+  mv('[data-i18n="memoryNote"]', "panel-memory"); mv(".memory-add-row", "panel-memory"); mv("#memory-list", "panel-memory");
+  mv(".usage-table", "panel-usage"); mv("#profile-wallet", "panel-usage");
+  mv("#appearance-seg", "panel-appearance"); mv("#language-select", "panel-language");
+  ["#clear-chats-btn", "#logout-btn"].forEach(sel => {
+    const btn = document.querySelector(sel); if (!btn) return;
+    btn.classList.add("ap-row", "danger-row");
+    const item = document.createElement("div"); item.className = "ap-item";
+    item.dataset.kw = sel === "#logout-btn" ? "logout خروج" : "clear delete پاک حذف چت";
+    item.appendChild(btn); $("ap-data").appendChild(item);
+  });
+  ap.querySelectorAll(".ap-toggle").forEach(b => b.addEventListener("click", () => {
+    const item = b.closest(".ap-item"); const open = item.classList.toggle("open");
+    b.setAttribute("aria-expanded", String(open));
+  }));
+
+  let apPushed = false;
+  function acctTexts() {
+    const T = {
+      "ap-sec-account": ["حساب", "Account"],
+      "lbl-persona": ["شخصی‌سازی", "Personalization"], "lbl-memory": ["حافظه", "Memory"],
+      "lbl-email": ["ایمیل", "Email"], "lbl-usage": ["مصرف و محدودیت‌ها", "Usage and limits"],
+      "lbl-appearance": ["ظاهر", "Appearance"], "lbl-language": ["زبان", "Language"]
+    };
+    Object.keys(T).forEach(id => { const el = $(id); if (el) el.textContent = L(T[id][0], T[id][1]); });
+  }
+  function openAcct() {
+    acctTexts(); renderAvatar();
+    try { loadProfile(); } catch (_) {}
+    try { loadMemory(); } catch (_) {}
+    ap.classList.remove("hidden");
+    ap.querySelector(".ip-scroll").scrollTop = 0;
+    if (!apPushed) { history.pushState({ barmanAcct: 1 }, ""); apPushed = true; }
+    if (isMobileViewport()) closeSidebar();
+  }
+  function hideAcct() { ap.classList.add("hidden"); }
+  function closeAcct() { if (apPushed) { apPushed = false; history.back(); } else hideAcct(); }
+  window.addEventListener("popstate", () => { apPushed = false; hideAcct(); });
+  $("ap-back").addEventListener("click", closeAcct);
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !ap.classList.contains("hidden")) closeAcct(); });
+  document.getElementById("profile-btn").addEventListener("click", openAcct);
+  const lsel = $("language-select"); if (lsel) lsel.addEventListener("change", acctTexts);
+  const lo = $("logout-btn"); if (lo) lo.addEventListener("click", hideAcct);
+  function renderAvatar() {
+    const em = window.BarmanAuth && window.BarmanAuth.current && window.BarmanAuth.current();
+    const ini = em ? String(em).slice(0, 2).toUpperCase() : "";
+    document.getElementById("avatar-initials").textContent = ini;
+    const av = document.getElementById("ap-avatar"), nm = document.getElementById("ap-name");
+    if (av) av.textContent = ini || "";
+    if (nm) nm.textContent = em ? String(em).split("@")[0] : "";
+  }
+  renderAvatar();
+  document.getElementById("sidebar-open-btn").addEventListener("click", renderAvatar);
+  window.addEventListener("focus", renderAvatar);
 })();
 </script>
 </body>
